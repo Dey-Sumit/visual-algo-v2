@@ -3,3 +3,132 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .navItem {
+    @apply flex items-center justify-center px-3 py-2 space-x-2 font-semibold rounded-full cursor-pointer hover:text-white sm:justify-start;
+  }
+  .button {
+    @apply flex items-center justify-center p-2 text-lg font-bold text-white bg-blue-700 rounded-md focus:outline-none;
+  }
+}
+/* chrome */
+::-webkit-scrollbar {
+  display: none;
+}
+/* firefox */
+* {
+  scrollbar-width: none;
+}
+/* 
+* {
+  outline: 1px solid red;
+  outline-offset: -1px; 
+} */
+
+.node-wall {
+  animation-name: wallAnimation;
+  animation-duration: 0.3s;
+  animation-timing-function: ease-out;
+  animation-delay: 0;
+  animation-direction: alternate;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  animation-play-state: running;
+}
+
+@keyframes wallAnimation {
+  0% {
+    transform: scale(0.3);
+    background-color: var(--pink);
+  }
+
+  50% {
+    transform: scale(1.2);
+    background-color: var(--pink);
+  }
+
+  100% {
+    transform: scale(1);
+    background-color: var(--pink);
+  }
+}
+
+.node-visited {
+  animation-name: visitedAnimation;
+  animation-duration: 0.3s;
+  animation-timing-function: ease-out;
+  animation-delay: 0;
+  animation-direction: alternate;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  animation-play-state: running;
+}
+
+@keyframes visitedAnimation {
+  0% {
+    transform: scale(0.1);
+    background-color: rgba(2, 252, 98, 0.75);
+    border-radius: 100%;
+    outline: none;
+  }
+
+  40% {
+    transform: scale(0.6);
+    border-radius: 100%;
+    outline: none;
+    background-color: rgba(1, 247, 124, 0.75);
+  }
+
+  85% {
+    transform: scale(1.2);
+    background-color: rgba(30, 168, 131, 0.75);
+  }
+
+  100% {
+    transform: scale(1);
+    background-color: rgba(3, 80, 73, 0.815);
+  }
+}
+
+.node-shortest-path {
+  animation-name: shortestPath;
+  animation-duration: 1.5s;
+  animation-timing-function: ease-out;
+  animation-delay: 0;
+  animation-direction: alternate;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  animation-play-state: running;
+}
+
+@keyframes shortestPath {
+  0% {
+    transform: scale(0.6);
+    border-radius: 100%;
+    background-color: rgb(250, 54, 4);
+    outline: none;
+  }
+
+  50% {
+    transform: scale(1.2);
+    background-color: rgb(248, 252, 1);
+    outline: none;
+  }
+
+  100% {
+    transform: scale(1);
+    background-color: #fffe6a;
+  }
+}
+
+.start-node {
+  background-image: url("public/car.png");
+  background-position: center;
+  background-size: cover;
+}
+.end-node {
+  background-image: url("public/flag.png");
+  background-position: center;
+  background-size: cover;
+}
