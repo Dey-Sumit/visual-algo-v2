@@ -1,7 +1,6 @@
-import { IoMdHome, IoMdLogOut, IoMdNotifications } from "react-icons/io";
-import { MdExplore } from "react-icons/md";
-import { SiAbstract, SiTwitter } from "react-icons/si";
-import { RiUserFill } from "react-icons/ri";
+import { AiFillGithub } from "react-icons/ai";
+import { SiAbstract } from "react-icons/si";
+import { GiPathDistance } from "react-icons/gi";
 import { IconType } from "react-icons";
 
 import Link from "next/link";
@@ -24,9 +23,13 @@ export default function Sidebar() {
         </Link>
       </div>
       <div className="flex flex-col space-y-5 ">
-        <SidebarItem Icon={IoMdHome} text="Home" handler={() => router.push("/")} />
+        <SidebarItem Icon={GiPathDistance} text="Path Finder" handler={() => router.push("/pathFinder")} />
 
-        <SidebarItem Icon={MdExplore} text="Explore" handler={() => router.push("/explore")} />
+        <SidebarItem
+          Icon={AiFillGithub}
+          text="Github"
+          handler={() => window.open("https://github.com/Dey-Sumit/visual-algo-v2")}
+        />
       </div>
       <div></div>
     </div>
