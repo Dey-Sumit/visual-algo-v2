@@ -13,12 +13,12 @@ export default function Sidebar() {
 
   return (
     <div
-      className={`bg-dark-700 fixed flex-col justify-between h-screen px-3 sm:px-6 py-8 pb-20 text-lg shadow-lg flex z-10 sm:sticky top-0 sm:max-w-max  max-w-max`}
+      className={`bg-[#111621]  flex-col justify-between h-screen px-3 sm:px-6 py-8 pb-20 text-lg shadow-lg flex z-10 sm:sticky top-0 sm:max-w-max  max-w-max`}
     >
       <div className="flex items-center justify-center space-x-2 font-medium ">
         <Link href="/">
           <a>
-            <SiAbstract className="text-blue-600 cursor-pointer " size="30" />
+            <SiAbstract className="text-green-400 cursor-pointer " size="30" />
           </a>
         </Link>
       </div>

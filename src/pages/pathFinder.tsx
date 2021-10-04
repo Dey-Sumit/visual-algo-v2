@@ -2,20 +2,24 @@ import Node from "@components/Node";
 import { bfs } from "algorithms/bfs";
 import { INode } from "libs/types";
 import { get_nodes_in_shortest_path_order } from "libs/utils";
-import { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { motion, Variants } from "framer-motion";
 import Stats from "@components/commons/Stats";
-import ReactSlider from "react-slider";
-import Slider, { createSliderWithTooltip } from "rc-slider";
 import { useMediaQuery, useMediaQueries } from "@react-hook/media-query";
-import { useWindowSize } from "rooks";
+import { dfs } from "algorithms/dfs";
+import Header from "@components/layouts/Header";
+// import CustomButton from "@components/commons/CustomButton";
+import classNames from "classnames";
+import { IconType } from "react-icons/lib";
+import CustomButton from "@components/commons/CustomButton";
+
 let CURRENT_START_NODE_ROW = 2;
 let CURRENT_START_NODE_COL = 8;
 let CURRENT_END_NODE_ROW = 8;
 let CURRENT_END_NODE_COL = 2;
 
-const createNode = (row: number, col: number) => {
+const createNode = (row: number, col: number, isWall: boolean = false) => {
   return {
     row,
     col,
@@ -24,7 +28,7 @@ const createNode = (row: number, col: number) => {
     distance: Infinity,
     isVisited: false,
     previousNode: null,
-    isWall: false,
+    isWall,
     // for aStar algorithm
     f: 0,
     g: 0,
@@ -37,7 +41,7 @@ const createInitialGrid = (cols: number) => {
   for (let row = 0; row < 15; row++) {
     var currentRow = [];
     for (let col = 0; col < cols; col++) {
-      currentRow.push(createNode(row, col));
+      currentRow.push(createNode(row, col, Math.random() < 0.2));
     }
     temp_grid.push(currentRow);
   }
@@ -94,19 +98,20 @@ const PathFinder = () => {
 
   const [animationSpeed, setAnimationSpeed] = useState(20);
   const [animationRunning, setAnimationRunning] = useState(false);
-  const [cols, setCols] = useState(25);
+  const [cols, setCols] = useState(null);
 
   const width_1130 = useMediaQuery("only screen and (min-width: 1130px)");
   //const width_500 = useMediaQuery("only screen and (min-width: 500px)");
 
   useEffect(() => {
-    if (!width_1130 && cols !== 25) {
+    //  console.log({ width_1130, cols });
+
+    if (width_1130 && cols !== 25) {
       setCols(25);
-      setMainGrid(createInitialGrid(cols));
-    } else if (width_1130 && cols !== 15) {
+    } else if (!width_1130 && cols !== 15) {
       setCols(15);
-      setMainGrid(createInitialGrid(cols));
     }
+    setMainGrid(createInitialGrid(cols));
   }, [width_1130, cols]);
 
   const [stats, setStats] = useState({
@@ -197,12 +202,12 @@ const PathFinder = () => {
     return newGrid;
   };
 
-  const reArrangeGrid = (grid: INode[][]) => {
+  const reArrangeGrid = (grid: INode[][], cols: number) => {
     // make sure don't reset the walls
     const newGrid = grid.slice();
     let node: INode;
     for (let row = 0; row < 15; row++) {
-      for (let col = 0; col < 30; col++) {
+      for (let col = 0; col < cols; col++) {
         node = newGrid[row][col];
         const newNode = {
           ...node,
@@ -257,7 +262,7 @@ const PathFinder = () => {
 
     if ((isStartNode || isEndNode) && alreadyRan) {
       resetColors();
-      setMainGrid(reArrangeGrid(mainGrid));
+      setMainGrid(reArrangeGrid(mainGrid, cols));
       getAnimateArray(currentAlgo);
     }
 
@@ -270,15 +275,15 @@ const PathFinder = () => {
       setTimeout(() => {
         if (i === nodesInShortestPathOrder.length - 1) setAnimationRunning(false);
         const { row, col, isStart, isEnd } = nodesInShortestPathOrder[i];
-        if (isStart || isEnd) return;
+        // if (isStart || isEnd) return;
         document.getElementById(`node-${row}-${col}`).classList.add("node-shortest-path");
       }, i * animationSpeed);
       // subtract to reverse the slider value :)
     }
   };
 
-  const animateTraversal = (visitedNodesInOrder: INode[], nodesInShortestPathOrder: INode[]) => {
-    console.log("animateTraversal called");
+  const animateTraversal = (visitedNodesInOrder: INode[], nodesInShortestPathOrder: INode[], success: boolean) => {
+    // console.log("animateTraversal called");
     setAnimationRunning(true);
 
     for (let i = 0; i < visitedNodesInOrder.length; i++) {
@@ -291,8 +296,10 @@ const PathFinder = () => {
       setTimeout(() => {
         const { row, col, isStart, isEnd } = visitedNodesInOrder[i];
 
-        if (isStart || isEnd) return;
+        //if (isStart || isEnd) return;
         document.getElementById(`node-${row}-${col}`).classList.add("node-visited");
+        // if no path found , then after animating the traversal, set the animation running flag false
+        if (i === visitedNodesInOrder.length - 1 && !success) setAnimationRunning(false);
       }, i * (50 - animationSpeed));
     }
   };
@@ -302,8 +309,11 @@ const PathFinder = () => {
     const startNode = mainGrid[CURRENT_START_NODE_ROW][CURRENT_START_NODE_COL];
     const endNode = mainGrid[CURRENT_END_NODE_ROW][CURRENT_END_NODE_COL];
     const timerStart = performance.now();
-    const { visitedNodesInOrder, success } = bfs(mainGrid, startNode, endNode);
-    console.log({ visitedNodesInOrder, success });
+
+    let visitedNodesInOrder: INode[], success: boolean;
+    if (algo == "bfs") ({ visitedNodesInOrder, success } = bfs(mainGrid, startNode, endNode));
+    if (algo == "dfs") ({ visitedNodesInOrder, success } = dfs(mainGrid, startNode, endNode));
+    //console.log({ visitedNodesInOrder, success });
 
     let nodesInShortestPathOrder: INode[];
 
@@ -317,71 +327,46 @@ const PathFinder = () => {
       nodesTraversed: visitedNodesInOrder?.length,
       pathFound: success,
     });
-    animateTraversal(visitedNodesInOrder, nodesInShortestPathOrder);
+    animateTraversal(visitedNodesInOrder, nodesInShortestPathOrder, success);
+  };
+
+  const runAlgorithm = (algoName: "bfs" | "dfs" | "aStar" | any) => {
+    resetColors();
+    setMainGrid(reArrangeGrid(mainGrid, cols));
+    getAnimateArray(algoName);
   };
 
   return (
-    <div className="grid w-full h-full p-6 pt-8 place-items-center ">
-      {/* <span className="button">
-        {matches && "min width 1130"}
-        {matches1 && "min width 600"}
-      </span> */}
-      {mainGrid && (
-        <motion.div className="max-w-max" variants={variantsContainer} initial="initial" animate="animate">
-          {mainGrid.map((row, j) => (
-            <motion.div key={j} className="flex max-w-max" variants={variantsRow}>
-              {row.map((node, i) => (
-                <Node
-                  key={i}
-                  node={node}
-                  handleMouseDown={handleMouseDown}
-                  handleMouseEnter={handleMouseEnter}
-                  handleMouseUp={handleMouseUp}
-                />
-              ))}
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
-      <Stats {...stats} />
+    <div className="w-full h-full ">
+      <Header
+        animationRunning={animationRunning}
+        animationSpeed={animationSpeed}
+        setAnimationSpeed={setAnimationSpeed}
+      />
+      <div className="flex flex-col items-center justify-center p-4 space-y-4">
+        {mainGrid && (
+          <motion.div className="max-w-max" variants={variantsContainer} initial="initial" animate="animate">
+            {mainGrid.map((row, j) => (
+              <motion.div key={j} className="flex max-w-max" variants={variantsRow}>
+                {row.map((node, i) => (
+                  <Node
+                    key={i}
+                    node={node}
+                    handleMouseDown={handleMouseDown}
+                    handleMouseEnter={handleMouseEnter}
+                    handleMouseUp={handleMouseUp}
+                  />
+                ))}
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+        <Stats {...stats} />
 
-      <div className="flex justify-around w-full md:w-2/3">
-        {/* settings */}
-        <div className="flex flex-col my-4 space-y-2 ">
-          <span className="mb-6">Animation Speed</span>
-
-          <ReactSlider
-            min={10}
-            max={40}
-            disabled={animationRunning}
-            onChange={(value) => setAnimationSpeed(value)}
-            value={animationSpeed}
-            //className="p-2 bg-red-500"
-            //trackClassName="p-2 mt-5 bg-gray-700 rounded-full w-96"
-            thumbClassName="bg-gray-800 p-4 -mt-7 rounded-sm cursor-pointer border-gray-600 border "
-            className="p-2 mt-5 bg-gray-700 rounded-full w-96"
-            renderThumb={(props, state) => <div {...props}>{state.valueNow}</div>}
-          />
-        </div>
-
-        {/* buttons */}
-        <div className="flex items-center justify-center space-x-2 ">
-          <button
-            onClick={resetGrid}
-            className="inline-flex items-center px-4 py-2 font-bold text-white bg-gray-700 rounded hover:bg-gray-600"
-          >
-            <span>Reset Grid</span>
-          </button>
-          <button
-            onClick={() => {
-              resetColors();
-              setMainGrid(reArrangeGrid(mainGrid));
-              getAnimateArray("bfs");
-            }}
-            className="inline-flex items-center px-4 py-2 font-bold text-white bg-gray-700 rounded hover:bg-gray-600"
-          >
-            <span>BFS</span>
-          </button>
+        <div className="flex flex-col items-center justify-center md:space-x-2 md:flex-row ">
+          <CustomButton text="Reset Grid" handler={resetGrid} />
+          <CustomButton text="bfs" handler={runAlgorithm} />
+          <CustomButton text="dfs" handler={runAlgorithm} />
         </div>
       </div>
     </div>

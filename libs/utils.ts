@@ -81,3 +81,14 @@ export const get_unvisited_neighbors = (node: INode, grid: INode[][]) => {
   if (row > 0 && !grid[row - 1][col].isWall) neighbors.push(grid[row - 1][col]);
   return neighbors.filter((neighbor) => !neighbor.isVisited);
 };
+
+export const update_queue_with_unvisited_neighbors = (node: INode, grid: INode[][], queue: INode[]) => {
+  // get unvisited neighbors
+  const unvisitedNeighbors = get_unvisited_neighbors(node, grid);
+  for (const neighbor of unvisitedNeighbors) {
+    // set neighbor's prev node  = current node and add it to the queue(if not added)
+    neighbor.previousNode = node; // !will be used for the reverse path tracking & animation
+
+    if (!queue.includes(neighbor)) queue.push(neighbor);
+  }
+};

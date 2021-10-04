@@ -1,3 +1,5 @@
+import CountUp from "react-countup";
+
 interface Props {
   algoName: string;
   timeTaken: number;
@@ -18,15 +20,15 @@ const Stats = ({ algoName, timeTaken, nodesTraversed, pathFound, fastestPath }: 
       </div>{" "}
       <div className="flex flex-col items-center justify-center space-y-2">
         <span className="text-xl text-gray-100 ">Time Taken</span>
-        <span className="text-lg">{timeTaken ? `${timeTaken} ms ` : "0 ms"}</span>
+        <span className="text-lg">{timeTaken && <CountUp end={timeTaken} decimals={2} duration={2} />} ms </span>
       </div>
       <div className="flex flex-col items-center justify-center space-y-2">
         <span className="text-xl text-gray-100 ">Nodes Traversed</span>
-        <span className="text-lg">{nodesTraversed} nodes</span>
+        <span className="text-lg">{nodesTraversed && <CountUp end={nodesTraversed} duration={2} />} nodes</span>
       </div>
       <div className="flex flex-col items-center justify-center space-y-2">
         <span className="text-xl text-gray-100 ">Fastest Path</span>
-        <span className="text-lg">{fastestPath} nodes</span>
+        <span className="text-lg">{fastestPath && <CountUp end={fastestPath} duration={2} />} nodes</span>
       </div>
     </div>
   );
